@@ -82,81 +82,87 @@ export function TodoModal({
   };
   const onSubmit = async (data: TodoItem) => {
     setLoading(true);
-    const updateObj: any = {};
-    let resp: Resp<any>;
-    //==================================  FILE REF   ====================================================================================
-    //==================================  --------- -=======
-    if (uploadRef.current) {
-      //@ts-expect-error it could not recognize the ref
-      const uploadDto: Resp<any> = await uploadRef.current.uploadSingle(
-        editingData?.imgId
-      );
-      if (!uploadDto.ok) return handleErr(`upload Error: ${uploadDto.message}`);
-      // console.log("the uploadDto====", uploadDto);
-      if (uploadDto.respCode != ReturnType.NotModified) {
-        setModifiedData((prevState) => ({
-          ...prevState,
-          imgId: uploadDto.body._id,
-          imgUrl: uploadDto.body.url,
-        }));
-        data.imgUrl = uploadDto.body.url;
-        updateObj.imgUrl = uploadDto.body.url;
-        data.imgId = uploadDto.body._id;
-        updateObj.imgId = uploadDto.body._id;
-        console.log(">>>>>>>>>>>>>>>>>>>>>>updating", data.imgUrl, data);
+    try{
+      const updateObj: any = {};
+      let resp: Resp<any>;
+      //==================================  FILE REF   ====================================================================================
+      //==================================  --------- -=======
+      if (uploadRef.current) {
+        //@ts-expect-error it could not recognize the ref
+        const uploadDto: Resp<any> = await uploadRef.current.uploadSingle(
+            editingData?.imgId
+        );
+        if (!uploadDto.ok) return handleErr(`upload Error: ${uploadDto.message}`);
+        // console.log("the uploadDto====", uploadDto);
+        if (uploadDto.respCode != ReturnType.NotModified) {
+          setModifiedData((prevState) => ({
+            ...prevState,
+            imgId: uploadDto.body._id,
+            imgUrl: uploadDto.body.url,
+          }));
+          data.imgUrl = uploadDto.body.url;
+          updateObj.imgUrl = uploadDto.body.url;
+          data.imgId = uploadDto.body._id;
+          updateObj.imgId = uploadDto.body._id;
+          console.log(">>>>>>>>>>>>>>>>>>>>>>updating", data.imgUrl, data);
+        }
       }
-    }
-    if (uploadRef2.current) {
-      //@ts-expect-error it could not recognize the ref
-      const uploadDto: Resp<any> = await uploadRef2.current.uploadSingle(
-        editingData?.imgFileId
-      );
-      if (!uploadDto.ok) return handleErr(`upload Error: ${uploadDto.message}`);
-      // console.log("the uploadDto====", uploadDto);
-      if (uploadDto.respCode != ReturnType.NotModified) {
-        setModifiedData((prevState) => ({
-          ...prevState,
-          fileId: uploadDto.body._id,
-          fileUrl: uploadDto.body.url,
-        }));
-        data.fileUrl = uploadDto.body.url;
-        updateObj.fileUrl = uploadDto.body.url;
-        data.fileId = uploadDto.body._id;
-        updateObj.fileId = uploadDto.body._id;
-        console.log(">>>>>>>>>>>>>>>>>>>>>>updatingFill", data.imgUrl, data);
+      if (uploadRef2.current) {
+        //@ts-expect-error it could not recognize the ref
+        const uploadDto: Resp<any> = await uploadRef2.current.uploadSingle(
+            editingData?.imgFileId
+        );
+        if (!uploadDto.ok) return handleErr(`upload Error: ${uploadDto.message}`);
+        // console.log("the uploadDto====", uploadDto);
+        if (uploadDto.respCode != ReturnType.NotModified) {
+          setModifiedData((prevState) => ({
+            ...prevState,
+            fileId: uploadDto.body._id,
+            fileUrl: uploadDto.body.url,
+          }));
+          data.fileUrl = uploadDto.body.url;
+          updateObj.fileUrl = uploadDto.body.url;
+          data.fileId = uploadDto.body._id;
+          updateObj.fileId = uploadDto.body._id;
+          console.log(">>>>>>>>>>>>>>>>>>>>>>updatingFill", data.imgUrl, data);
+        }
       }
-    }
-    //==================================  End FILE REF
-    //==================================  --------- -===========================================================================================
-    if (isUpdate) {
-      if (!editingData || !("_id" in editingData))
-        return handleErr("malformed update");
-      console.log(">>>>>>>>>>>>>>>>>>>>>>updating22", data.imgUrl, data);
-      resp = await makeReq(
-        `todo/${editingData._id}`,
-        { ...modifiedData, ...updateObj },
-        MTD.PATCH
+      //==================================  End FILE REF
+      //==================================  --------- -===========================================================================================
+      if (isUpdate) {
+        if (!editingData || !("_id" in editingData))
+          return handleErr("malformed update");
+        console.log(">>>>>>>>>>>>>>>>>>>>>>updating22", data.imgUrl, data);
+        resp = await makeReq(
+            `todo/${editingData._id}`,
+            { ...modifiedData, ...updateObj },
+            MTD.PATCH
+        );
+        if (!resp.ok) return handleErr(resp.message);
+      } else {
+        data.tags = modifiedData?.tags as string[];
+        resp = await makeReq(`todo`, data, MTD.POST);
+        if (!resp.ok) return handleErr(resp.message);
+      }
+      await queryClient.invalidateQueries({ queryKey: ["todo"] });
+      reset();
+      if (uploadRef.current) {
+        //@ts-expect-error it could not recognize the ref
+        uploadRef.current.resetData();
+      }
+      if (uploadRef2.current) {
+        // @ts-expect-error it could not recognize the ref
+        uploadRef2.current.resetData();
+      }
+      messageApi.success(
+          `successfully ${isUpdate ? "updated" : "created"} todo  `
       );
-      if (!resp.ok) return handleErr(resp.message);
-    } else {
-      data.tags = modifiedData?.tags as string[];
-      resp = await makeReq(`todo`, data, MTD.POST);
-      if (!resp.ok) return handleErr(resp.message);
+      setLoading(false);
+    }catch (e:any) {
+      console.log("UploadingErr", e)
+      setLoading(false)
     }
-    await queryClient.invalidateQueries({ queryKey: ["todo"] });
-    reset();
-    if (uploadRef.current) {
-      //@ts-expect-error it could not recognize the ref
-      uploadRef.current.resetData();
-    }
-    if (uploadRef2.current) {
-      // @ts-expect-error it could not recognize the ref
-      uploadRef2.current.resetData();
-    }
-    messageApi.success(
-      `successfully ${isUpdate ? "updated" : "created"} todo  `
-    );
-    setLoading(false);
+
   };
 
   return (
@@ -164,11 +170,11 @@ export function TodoModal({
       title={editingData ? "Edit Todo" : "Create New Todo"}
       open={isOpen}
       onCancel={onClose}
-      onOk={handleSubmit(onSubmit)}
-      okText={editingData ? "Update" : "Create"}
+      // onOk={handleSubmit(onSubmit)}
+      footer={null}
     >
       {contextHolder}
-      <form onSubmit={handleSubmit(onSubmit)}>
+      <form className={"flex flex-col justify-center "} onSubmit={handleSubmit(onSubmit)}>
         <InputField
           register={register}
           errors={errors}
@@ -210,27 +216,29 @@ export function TodoModal({
           apiUrl="file"
           fileId={editingData?.fileId}
         />
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Tags
+          </label>
+          <div className="flex flex-wrap gap-2 mt-1">
+            {MockTags.map((tag) => (
+                <Tag
+                    key={tag}
+                    color={
+                      modifiedData?.tags?.includes(tag) ? TagColors[tag] : undefined
+                    }
+                    onClick={() => toggleTag(tag)}
+                    className="cursor-pointer text-sm"
+                >
+                  {tag}
+                </Tag>
+            ))}
+          </div>
+        </div>
+        <Submit  isLoading={loading} update={isUpdate} />
       </form>
 
-      <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Tags
-        </label>
-        <div className="flex flex-wrap gap-2 mt-1">
-          {MockTags.map((tag) => (
-            <Tag
-              key={tag}
-              color={
-                modifiedData?.tags?.includes(tag) ? TagColors[tag] : undefined
-              }
-              onClick={() => toggleTag(tag)}
-              className="cursor-pointer text-sm"
-            >
-              {tag}
-            </Tag>
-          ))}
-        </div>
-      </div>
+
     </Modal>
   );
 } // Tag color map
@@ -243,3 +251,46 @@ export const TagColors: Record<string, string> = {
   Later: "orange",
 };
 export const MockTags = ["Work", "Personal", "Urgent", "Ideas", "Later"];
+
+export function Submit({
+                         isLoading,
+                         update,
+                         text
+                       }: {
+  isLoading: boolean;
+  update?: boolean;
+  text?:string
+}) {
+  return (
+      // <div className="mb-5">
+      <button
+          disabled={isLoading}
+          type="submit"
+          className={
+            "self-center mt-10 mb-5 w-1/2 cursor-pointer rounded border border-primary bg-primary p-3  transition hover:bg-opacity-90 disabled:bg-blue-200 disabled:hover:bg-opacity-100 "+
+            "flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors"
+          }
+      >
+        {isLoading ? (
+            <div className="justify-between items-baseline">
+
+              {text? text: update ? "Updating" : "Creating"}
+              <Spinner />
+            </div>
+        ) : text? text:update ? "Update" : "Create"
+        }
+      </button>
+      // </div>
+  );
+}
+export const Spinner: React.FC = () => {
+  return (
+      <div
+          className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-e-transparent align-[-0.125em] text-surface motion-reduce:animate-[spin_1.5s_linear_infinite] dark:text-white"
+          role="status">
+  <span
+      className="!absolute !-m-px !h-px !w-px !overflow-hidden !whitespace-nowrap !border-0 !p-0 ![clip:rect(0,0,0,0)]"
+  >Loading...</span
+  >
+      </div>)
+}

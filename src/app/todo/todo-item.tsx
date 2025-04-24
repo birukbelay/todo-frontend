@@ -57,7 +57,7 @@ export function TodoItem({
     console.log('checked = ', e.target.checked);
     setTimeout(() => {
       setIsAnimating(false);
-    }, 600);
+    }, 900);
   };
 
   // Get file extension for icon display
