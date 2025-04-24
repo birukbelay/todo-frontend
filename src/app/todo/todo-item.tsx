@@ -1,10 +1,8 @@
 "use client";
 
-import { Avatar, Popconfirm, Tag, Tooltip } from "antd";
+import {Avatar, Checkbox, Popconfirm, Tag, Tooltip} from "antd";
 import {
   Calendar,
-  CheckCircle,
-  Circle,
   Download,
   Edit2,
   Trash2,
@@ -53,12 +51,13 @@ export function TodoItem({
     });
   };
 
-  const handleToggle = async () => {
+  const handleToggle = async (e:any) => {
     setIsAnimating(true);
     onToggle(todo);
+    console.log('checked = ', e.target.checked);
     setTimeout(() => {
       setIsAnimating(false);
-    }, 300);
+    }, 600);
   };
 
   // Get file extension for icon display
@@ -95,16 +94,19 @@ export function TodoItem({
       } ${todo.status === "done" ? "bg-gray-50" : ""}`}
     >
       <div className="flex items-start gap-3">
-        <button
-          onClick={handleToggle}
-          className="mt-1 flex-shrink-0 focus:outline-none"
-        >
-          {todo.status === "done" ? (
-            <CheckCircle className="h-5 w-5 text-green-500" />
-          ) : (
-            <Circle className="h-5 w-5 text-gray-300" />
-          )}
-        </button>
+        <Checkbox checked={todo.status === "done"} onChange={handleToggle}>
+          {/*{label}*/}
+        </Checkbox>
+        {/*<button*/}
+        {/*  onClick={handleToggle}*/}
+        {/*  className="mt-1 flex-shrink-0 focus:outline-none"*/}
+        {/*>*/}
+        {/*  {todo.status === "done" ? (*/}
+        {/*    <CheckCircle className="h-5 w-5 text-green-500" />*/}
+        {/*  ) : (*/}
+        {/*    <Circle className="h-5 w-5 text-gray-300" />*/}
+        {/*  )}*/}
+        {/*</button>*/}
         <div className="mb-3 ">
           <Avatar
             src={todo.imgUrl || "/placeholder.png"}
