@@ -147,7 +147,11 @@ export function TodoModal({
     reset();
     if (uploadRef.current) {
       //@ts-expect-error it could not recognize the ref
-      uploadRef.current.reset();
+      uploadRef.current.resetData();
+    }
+    if (uploadRef2.current) {
+      // @ts-expect-error it could not recognize the ref
+      uploadRef2.current.resetData();
     }
     messageApi.success(
       `successfully ${isUpdate ? "updated" : "created"} todo  `
