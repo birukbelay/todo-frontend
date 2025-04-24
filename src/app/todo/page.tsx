@@ -12,7 +12,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Pagination, message } from "antd";
 import { CheckCircle, Circle, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
-
+import {useAuth} from "@/lib/state/context/jotai-auth";
+import { useRouter } from 'next/navigation';
 function NoTodo() {
   return (
     <div className="text-center p-8 bg-white rounded-lg shadow-sm">
@@ -43,6 +44,13 @@ function NoTodo() {
 export default function TodosPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [modalVisible, setModalVisible] = useState(false);
+  const {loggedIn}= useAuth()
+  const router = useRouter();
+  useEffect(() => {
+    if (!loggedIn) {
+      router.push('/login'); // Redirect to the login page
+    }
+  }, [loggedIn, router]);
 
   const makeReq = useMakeReq();
   const queryClient = useQueryClient();
