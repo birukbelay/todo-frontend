@@ -8,10 +8,11 @@ import { useRouter } from "next/navigation";
 
 export function TodoHeader() {
   const router = useRouter();
+  const {logout} = useAuth()
 
   const { user } = useAuth();
-  const handleLogout = () => {
-    // In a real app, this would clear auth tokens/cookies
+  const handleLogout = async () => {
+    await logout()
     router.push("/login");
   };
 
