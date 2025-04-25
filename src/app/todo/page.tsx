@@ -43,6 +43,7 @@ function NoTodo() {
 
 export default function TodosPage() {
   const [currentPage, setCurrentPage] = useState(1);
+  const [currentDonePage, setCurrentDonePage] = useState(1);
   const [modalVisible, setModalVisible] = useState(false);
   const {loggedIn}= useAuth()
   const router = useRouter();
@@ -87,25 +88,28 @@ export default function TodosPage() {
 
   useEffect(() => {
     setCurrentPage(1); // Reset to first page when filtering
+    setCurrentDonePage(1); // Reset to first page when filtering
   }, []);
 
   //==============  State That Will Remain =========
 
-  const [query, setQuery] = useState<Record<string, any>>();
+  const [query, setQuery] = useState<Record<string, any>>({limit: 5});
   const setPage = (page: number) => {
-    setQuery({ ...query, page });
     setCurrentPage(page);
   };
-  const { isLoading: todoLoading, data: todoList } = useFetch(
-    ["todo", JSON.stringify(query), "todo"],
+  const setDonePage = (page: number) => {
+    setCurrentDonePage(page);
+  };
+  const { isLoading: todoLoading, data: todoLists } = useFetch(
+    ["todo", JSON.stringify(query), "todo", `${currentPage}`],
     `todo`,
-    { ...query, status: "todo" }
+    { ...query, status: "todo", page: currentPage }
   );
-  const todoItems = todoList?.body || [];
+  const todoItems = todoLists?.body || [];
   const { isLoading: doneLoading, data: doneTodoList } = useFetch(
-    ["todo", JSON.stringify(query), "done"],
+    ["todo", JSON.stringify(query), "done", `${currentDonePage}`],
     `todo`,
-    { ...query, status: "done" }
+    { ...query, status: "done", page: currentDonePage }
   );
   const doneItems = doneTodoList?.body || [];
 
@@ -183,6 +187,18 @@ export default function TodosPage() {
                   </ul>
                 )}
               </div>
+              {/* Unfinished TODO LISTS*/}
+              {todoLists?.count > 0 && (
+                  <div className="mt-8 flex justify-center">
+                    <Pagination
+                        current={currentPage}
+                        onChange={setPage}
+                        total={todoLists?.count||0}
+                        pageSize={5}
+                        showSizeChanger={false}
+                    />
+                  </div>
+              )}
             </div>
 
             {/* =====================    Completed Items Column */}
@@ -216,22 +232,23 @@ export default function TodosPage() {
                   </ul>
                 )}
               </div>
+              {/* Pagination For Done */}
+              {doneTodoList?.count > 0 && (
+                  <div className="mt-8 flex justify-center">
+                    <Pagination
+                        current={currentDonePage}
+                        onChange={setDonePage}
+                        total={doneTodoList?.count ||0}
+                        pageSize={5}
+                        showSizeChanger={false}
+                    />
+                  </div>
+              )}
             </div>
           </div>
         )}
 
-        {/* TODO Pagination */}
-        {todoItems.length > 0 && (
-          <div className="mt-8 flex justify-center">
-            <Pagination
-              current={currentPage}
-              onChange={setPage}
-              total={todoItems.length}
-              pageSize={5}
-              showSizeChanger={false}
-            />
-          </div>
-        )}
+
       </div>
 
       {/* Todo Modal Component */}
