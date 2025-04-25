@@ -148,20 +148,20 @@ export function TodoItem({
 
           {/* File attachment */}
           {/* {todo.fileUrl && ( */}
-          <div className="mb-3">
+          {todo.fileUrl&&<div className="mb-3">
             <a
-              href={todo.fileUrl}
-              download={todo.fileUrl || "attachment"}
-              className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 py-2 px-3 rounded-md transition-colors w-fit"
+                href={todo.fileUrl}
+                download={todo.fileUrl || "attachment"}
+                className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 py-2 px-3 rounded-md transition-colors w-fit"
             >
               {/* icon */}
               <span className="text-lg">{getFileIcon(todo?.fileUrl)}</span>
               <span className="truncate max-w-[150px]">
                 {todo?.fileUrl || "Download attachment"}
               </span>
-              <Download className="h-4 w-4" />
+              <Download className="h-4 w-4"/>
             </a>
-          </div>
+          </div>}
           {/* )} */}
 
           <div className="flex items-center justify-between">
