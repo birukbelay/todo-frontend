@@ -48,7 +48,7 @@ export default function TodosPage() {
   const {loggedIn}= useAuth()
   const router = useRouter();
   useEffect(() => {
-    if (!loggedIn) {
+    if (loggedIn===false) {
       router.push('/login'); // Redirect to the login page
     }
   }, [loggedIn, router]);
