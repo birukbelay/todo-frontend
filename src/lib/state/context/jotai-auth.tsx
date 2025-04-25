@@ -30,6 +30,8 @@ export const accessTokenAtom = atom<string | null>(null);
 accessTokenAtom.debugLabel = "accessToken";
 export const loadingAtom = atom<boolean | null>(null);
 loadingAtom.debugLabel = "loading";
+export const loadingAuthAtom = atom<boolean>(false);
+loadingAuthAtom.debugLabel = "loadingAuth";
 export const loggedInAtom = atom<boolean | null>(null);
 loggedInAtom.debugLabel = "loggedIn";
 export const networkInAtom = atom<boolean | null>(null);
@@ -48,6 +50,7 @@ export const useAuth = () => {
   const [noNetwork, setNoNetwork] = useAtom(networkInAtom);
   const [accessToken, setAccessToken] = useAtom(accessTokenAtom);
   const [loading, setLoading] = useAtom(loadingAtom);
+  const [loadingAuth, setLoadingAuth] = useAtom(loadingAuthAtom);
   const router = useRouter();
 
   useEffect(() => {
@@ -101,13 +104,16 @@ export const useAuth = () => {
     if (noNetwork) return;
     console.log("logout Called:");
     try {
+      setLoadingAuth(true);
       const response = await axios.post(`/api/auth/logout`);
       setUser(null);
       setAccessToken(null);
       setLoggedIn(false);
       console.log("logout success", response.data);
       // router.push("/signin");
+      setLoadingAuth(false);
     } catch (err: any) {
+      setLoadingAuth(false);
       const resp = HandleAxiosErr(err);
       setLoggedIn(false);
       setNoNetwork(true);
@@ -129,7 +135,7 @@ export const useAuth = () => {
   };
   const login = async (credentials: LoginCred): Promise<Resp<LoginResp>> => {
     try {
-      setLoading(true);
+      setLoadingAuth(true);
       const response: AxiosResponse<LoginResp> = await axios.post(
         `/api/auth/login`,
         { info_type: "m", ...credentials }
@@ -140,8 +146,10 @@ export const useAuth = () => {
       setUser(user_data);
       setLoading(false);
       setLoggedIn(true);
+      setLoadingAuth(false);
       return Succeed(response.data);
     } catch (e: any) {
+      setLoadingAuth(false);
       const resp = HandleAxiosErr(e);
       setLoading(false);
       return FAIL(resp.Message);
@@ -159,5 +167,6 @@ export const useAuth = () => {
     logout,
     getAccessToken,
     login,
+    loadingAuth
   };
 };

@@ -18,7 +18,7 @@ import { LoginValidator, TLoginSchema } from "../models";
 
 const SignIn: React.FC = () => {
   const [messageApi, contextHolder] = message.useMessage();
-  const { loading, login } = useAuth();
+  const { loadingAuth, login } = useAuth();
   const router = useRouter();
   const {
     register,
@@ -55,7 +55,7 @@ const SignIn: React.FC = () => {
             placeHolder="Enter Password"
             label="Password"
           />
-          <SubmitInput title="Login" loading={loading as boolean} />
+          <SubmitInput title="Login" loading={loadingAuth } />
 
           <GoToLink
             path="/signup"
